@@ -14,7 +14,8 @@ services:
       - SECRET_KEY=tu-clave-secreta-aqui
       - DEBUG=True
     depends_on:
-      - fastapi-auth-neo4j
+      - fastapi-auth-neo4j:
+          condition: service_healthy
 
   fastapi-auth-neo4j:
     image: neo4j:2025.06
