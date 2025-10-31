@@ -3,8 +3,9 @@ from pydantic import BaseModel;
 from src.routes.auth import auth_router;
 from src.routes.user import user_router;
 from neomodel import config
+from src.config.settings import settings
 
-config.DATABASE_URL = 'bolt://neo4j:test1234@localhost:7687'
+config.DATABASE_URL = settings.database_url
 
 app = FastAPI()
 
