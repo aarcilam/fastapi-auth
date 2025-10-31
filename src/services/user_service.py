@@ -17,6 +17,9 @@ class UserService:
         except Exception:
             return None
 
+    def get_users(self):
+        return User.nodes.all()        
+
     def create_user(self, name: str, email: str, password: str):
         user = User(name=name, email=email, password=password).save()
         return user
