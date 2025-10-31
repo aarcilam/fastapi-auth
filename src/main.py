@@ -9,5 +9,5 @@ config.DATABASE_URL = settings.database_url
 
 app = FastAPI()
 
-app.include_router(auth_router, prefix="/auth")
-app.include_router(user_router, prefix="/api")
+app.include_router(auth_router, prefix="/auth", tags=["auth"] )
+app.include_router(user_router, prefix="/users", tags=["users"] )
