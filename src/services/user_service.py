@@ -1,5 +1,6 @@
 from src.models.user_model import User
 from src.models.role_model import Role
+import bcrypt
 
 
 class UserService:
@@ -19,11 +20,27 @@ class UserService:
             return None
 
     def get_users(self):
-        return User.nodes.all()        
+        return User.nodes.all()    
+
+    def login_user(self, email: str, password: str):
+        try:
+            user = User.nodes.get(email=email)
+            if bcrypt.checkpw(password.encode('utf8'), user.password.encode('utf8')):
+                return user
+            return None
+        except Exception:
+            return None    
 
     def create_user(self, name: str, email: str, password: str):
         role = self.get_role(name="user")
-        user = User(name=name, email=email, password=password).save()
+        # Generating Salt
+        salt = bcrypt.gensalt()
+        # Hashing Password
+        hash_password = bcrypt.hashpw(
+            password=password.encode('utf8'),
+            salt=salt
+        )
+        user = User(name=name, email=email, password=hash_password.decode('utf8')).save()
         user.roles.connect(role)
         
         return user
