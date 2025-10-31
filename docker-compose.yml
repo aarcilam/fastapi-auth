@@ -10,9 +10,9 @@ services:
     volumes:
       - ./:/code
     environment:
-      - NEO4J_URI=bolt://fastapi-auth-neo4j:7687
-      - NEO4J_USER=neo4j
-      - NEO4J_PASSWORD=secret
+      - DATABASE_URL=bolt://neo4j:test1234@fastapi-auth-neo4j:7687
+      - SECRET_KEY=tu-clave-secreta-aqui
+      - DEBUG=True
     depends_on:
       - fastapi-auth-neo4j
 

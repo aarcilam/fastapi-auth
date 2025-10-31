@@ -56,3 +56,4 @@ staticfiles/
 *.log
 *.bak
 *.swp
+.env
