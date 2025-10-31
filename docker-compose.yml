@@ -16,6 +16,8 @@ services:
     depends_on:
       fastapi-auth-neo4j:
           condition: service_healthy
+    networks:
+      - fastapi-auth-network
 
   fastapi-auth-neo4j:
     image: neo4j:2025.06
@@ -39,6 +41,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 3∫0s
+    networks:
+      - fastapi-auth-network
 
 volumes:
   neo4j_data:
+
+networks:
+  fastapi-auth-network:
+    driver: bridge
