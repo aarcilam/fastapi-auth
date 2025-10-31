@@ -3,3 +3,4 @@ uvicorn[standard]
 pydantic
 neo4j
 neomodel
+pydantic_settings
