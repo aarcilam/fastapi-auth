@@ -1,3 +1,4 @@
+fastapi
 uvicorn
 pydantic
 neo4j

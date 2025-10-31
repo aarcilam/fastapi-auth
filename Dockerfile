@@ -1,20 +1,13 @@
-# Use a suitable base image
-FROM python:3.9-slim-buster
+FROM python:3.9
+ENV APP_HOME=/home/app/web
+RUN mkdir -p $APP_HOME
+WORKDIR $APP_HOME
 
-# Set the working directory in the container
-WORKDIR /app
+RUN apk update && apk add --no-cache bash
+ADD requirements.txt $APP_HOME
+RUN pip install -r $APP_HOME/requirements.txt
+# Install FastAPI and Uvicorn
+RUN pip install fastapi uvicorn
 
-# Copy the requirements file into the container
-COPY requirements.txt .
-
-# Install the Python dependencies, including uvicorn
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the application code into the container
-COPY . .
-
-# Expose the port your FastAPI application listens on
-EXPOSE 8000
-
-# Command to run the application using uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+COPY src/ $APP_HOME
+CMD ["uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
