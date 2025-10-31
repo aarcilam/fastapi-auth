@@ -10,7 +10,7 @@ services:
     volumes:
       - ./:/code
     environment:
-      - DATABASE_URL=bolt://neo4j:test1234@fastapi-auth-neo4j:7687
+      - DATABASE_URL=bolt://neo4j:test1234@fastapi-neo4j-db-service:7687
       - SECRET_KEY=tu-clave-secreta-aqui
       - DEBUG=True
     depends_on:
