@@ -1,6 +1,8 @@
 from src.models.user_model import User
 from src.models.role_model import Role
 import bcrypt
+import jwt
+from src.config.settings import settings
 
 
 class UserService:
@@ -26,7 +28,8 @@ class UserService:
         try:
             user = User.nodes.get(email=email)
             if bcrypt.checkpw(password.encode('utf8'), user.password.encode('utf8')):
-                return user
+                encoded_jwt = jwt.encode({"sub": user.uid}, settings.secret_key, algorithm="HS256")
+                return encoded_jwt
             return None
         except Exception:
             return None    
