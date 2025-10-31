@@ -1,0 +1,34 @@
+# /home/andresarcila/Documentos/fastapi-auth/docker-compose.yml
+services:
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "80:80"
+  #   # Mount project into the same path used by the image to avoid hiding built files
+  #   volumes:
+  #     - ./:/code
+  #   environment:
+  #     - NEO4J_URI=bolt://neo4j:7687
+  #     - NEO4J_USER=neo4j
+  #     - NEO4J_PASSWORD=secret
+  #   depends_on:
+  #     - neo4j
+
+  neo4j:
+    image: neo4j:5
+    ports:
+      - "7474:7474"   # HTTP browser
+      - "7687:7687"   # Bolt
+    environment:
+      NEO4J_AUTH: "neo4j/secret"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/import
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:

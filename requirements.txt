@@ -1,0 +1,4 @@
+uvicorn
+pydantic
+neo4j
+neomodel
