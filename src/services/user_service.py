@@ -1,4 +1,5 @@
 from src.models.user_model import User
+from src.models.role_model import Role
 
 
 class UserService:
@@ -21,5 +22,18 @@ class UserService:
         return User.nodes.all()        
 
     def create_user(self, name: str, email: str, password: str):
+        role = self.get_role(name="user")
         user = User(name=name, email=email, password=password).save()
+        user.roles.connect(role)
+        
         return user
+
+    def get_role(self, name: str):
+        try:
+            role = Role.nodes.get(name=name)
+            if not role:
+                role = Role(name=name).save()
+            return role
+        except Exception:
+            role = Role(name=name).save()
+            return role
