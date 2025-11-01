@@ -42,12 +42,12 @@ class UserService:
 
                 token = jwt.encode(access_payload, settings.secret_key, algorithm="HS256")
                 refresh_token = jwt.encode(refresh_payload, settings.secret_key, algorithm="HS256")
-                session = Session(token=token, created_at=now.isoformat()).save()
+                session = Session(token=token).save()
                 user.sessions.connect(session)
                 return {"token": token, "refresh_token": refresh_token}
             return None
         except Exception:
-            login_attempt = LoginAttempt(timestamp="now", ip_address=ip_address).save()
+            login_attempt = LoginAttempt(ip_address=ip_address).save()
             return None    
 
     def create_user(self, name: str, email: str, password: str):

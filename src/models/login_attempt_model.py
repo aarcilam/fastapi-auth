@@ -1,6 +1,6 @@
-from neomodel import StructuredNode, StringProperty, UniqueIdProperty
+from neomodel import StructuredNode, StringProperty, UniqueIdProperty, DateTimeNeo4jFormatProperty
 
 class LoginAttempt(StructuredNode):
     uid = UniqueIdProperty()
-    timestamp = StringProperty(required=True)
+    timestamp = DateTimeNeo4jFormatProperty(default_now=True)
     ip_address = StringProperty(required=True)
