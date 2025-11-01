@@ -8,7 +8,7 @@ auth_router = APIRouter()
 
 @auth_router.post("/login")
 async def login(dto: login_dto):
-    response = AuthController().login(email=dto.email, password=dto.password)
+    response = AuthController().login(email=dto.email, password=dto.password, ip_address=dto.ip_address)
     return {"message": "Login successful", "token": response}
 
 @auth_router.post("/register")
