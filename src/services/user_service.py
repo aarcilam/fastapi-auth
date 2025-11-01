@@ -73,3 +73,28 @@ class UserService:
         except Exception:
             role = Role(name=name).save()
             return role
+
+    def refresh_token(self, refresh_token: str):
+        try:
+            payload = jwt.decode(refresh_token, settings.secret_key, algorithms=["HS256"])
+            user_id = payload.get("sub")
+            user = self.get_user(user_id)
+            if not user:
+                return None
+
+            now = datetime.utcnow()
+            access_exp = now + timedelta(minutes=settings.access_token_expire_minutes)
+
+            access_payload = {
+                "sub": user.uid,
+                "iat": int(now.timestamp()),
+                "exp": int(access_exp.timestamp()),
+            }
+
+            new_access_token = jwt.encode(access_payload, settings.secret_key, algorithm="HS256")
+            session = Session(token=new_access_token, created_at=now.isoformat()).save()
+            user.sessions.connect(session)
+
+            return {"token": new_access_token}
+        except Exception:
+            return None

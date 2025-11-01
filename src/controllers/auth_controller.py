@@ -7,3 +7,9 @@ class AuthController:
         if not response:
             raise HTTPException(status_code=404, detail="Something goes wrong")
         return response
+
+    def refresh_token(self, refresh_token: str):
+        response = UserService().refresh_token(refresh_token= refresh_token)
+        if not response:
+            raise HTTPException(status_code=404, detail="Something goes wrong")
+        return response
