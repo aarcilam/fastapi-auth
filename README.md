@@ -1,0 +1,205 @@
+# FastAPI Auth - Microservicio de Autenticación y Gestión de Usuarios
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-teal.svg)](https://fastapi.tiangolo.com/)
+[![Neo4j](https://img.shields.io/badge/Neo4j-2025.06-green.svg)](https://neo4j.com/)
+[![License](https://img.shields.io/badge/License-Open%20Source-green.svg)](LICENSE)
+
+## 📋 Descripción
+
+**FastAPI Auth** es un microservicio open source desarrollado en Python con Neo4j que proporciona un sistema completo de autenticación y gestión de usuarios. Este proyecto está diseñado para ser modular, escalable y fácil de integrar en arquitecturas de microservicios modernas.
+
+El sistema ofrece capacidades avanzadas de autenticación con soporte para sesiones, roles, capacidades y notificaciones, aprovechando el poder de las bases de datos de grafos para modelar relaciones complejas entre usuarios y sus recursos.
+
+## ✨ Funcionalidades
+
+### 🔐 Autenticación
+- **Registro de usuarios**: Creación de nuevas cuentas con validación de datos
+- **Login seguro**: Autenticación mediante email y contraseña con encriptación bcrypt
+- **Gestión de sesiones**: Control y seguimiento de sesiones activas de usuarios
+- **Tokens JWT**: Generación de tokens de acceso y refresh tokens
+- **Refresh tokens**: Renovación de tokens de acceso expirados
+- **Intentos de login**: Seguimiento de intentos de autenticación fallidos
+
+### 👥 Gestión de Usuarios
+- **CRUD de usuarios**: Creación, lectura y gestión de usuarios
+- **Estados de usuario**: Control de usuarios activos, bloqueados
+- **Metadatos personalizados**: Almacenamiento de información adicional en formato JSON
+
+### 🔑 Control de Acceso
+- **Sistema de roles**: Asignación y gestión de roles a usuarios
+- **Capacidades**: Control granular de permisos mediante capacidades
+- **Relaciones complejas**: Modelado de jerarquías y relaciones entre usuarios
+
+### 📬 Notificaciones
+- **Sistema de notificaciones**: Relación entre usuarios y notificaciones
+- **Historial de notificaciones**: Seguimiento de notificaciones recibidas
+
+## 🏗️ Arquitectura
+
+El proyecto sigue una arquitectura limpia y modular:
+
+```
+src/
+├── config/          # Configuración de la aplicación
+├── controllers/     # Lógica de controladores
+├── dtos/            # Data Transfer Objects (DTOs)
+├── models/          # Modelos de Neo4j con neomodel
+├── routes/          # Rutas de FastAPI
+└── services/        # Lógica de negocio
+```
+
+## 🚀 Tecnologías
+
+### Python + FastAPI
+Este proyecto utiliza **Python** como lenguaje principal y **FastAPI** como framework web por las siguientes ventajas:
+
+- **Rendimiento excepcional**: FastAPI es uno de los frameworks más rápidos de Python, comparable a NodeJS y Go
+- **Documentación automática**: Genera documentación interactiva (Swagger/OpenAPI) automáticamente
+- **Type hints nativos**: Soporte completo para type hints, mejorando la mantenibilidad del código
+- **Validación automática**: Validación de datos mediante Pydantic integrado
+- **Async/Await**: Soporte nativo para operaciones asíncronas, ideal para I/O intensivo
+- **Ecosistema maduro**: Acceso a la vasta biblioteca de paquetes de Python
+- **Fácil de aprender**: Sintaxis clara y legible, ideal para proyectos open source
+
+### Neo4j (Base de Datos de Grafos)
+El proyecto utiliza **Neo4j** como base de datos por las siguientes razones:
+
+- **Relaciones complejas**: Excelente para modelar relaciones entre usuarios, roles, sesiones y notificaciones
+- **Consultas intuitivas**: Lenguaje de consulta Cypher es más legible que SQL para relaciones complejas
+- **Rendimiento en relaciones**: Optimizado para consultas basadas en relaciones y recorridos de grafos
+- **Flexibilidad de esquema**: Permite evolucionar el modelo de datos sin migraciones complejas
+- **Trazabilidad**: Ideal para rastrear relaciones como "quién creó qué" o "qué usuarios tienen qué roles"
+- **Escalabilidad horizontal**: Neo4j puede escalar para manejar grandes volúmenes de datos relacionados
+- **APOC procedures**: Acceso a librerías avanzadas para importación/exportación y análisis
+
+### Stack Tecnológico Completo
+
+- **FastAPI**: Framework web moderno y rápido
+- **Neo4j**: Base de datos de grafos
+- **neomodel**: ODM (Object Document Mapper) para Neo4j
+- **Pydantic**: Validación de datos y configuración
+- **JWT (PyJWT)**: Tokens de autenticación
+- **bcrypt**: Encriptación de contraseñas
+- **Docker & Docker Compose**: Containerización y orquestación
+
+## 📦 Requisitos Previos
+
+- Docker y Docker Compose instalados
+- Python 3.8+ (si ejecutas localmente sin Docker)
+
+## 🔧 Instalación
+
+### Opción 1: Docker Compose (Recomendado)
+
+1. Clona el repositorio:
+```bash
+git clone https://github.com/tu-usuario/fastapi-auth.git
+cd fastapi-auth
+```
+
+2. Crea un archivo `.env` con la siguiente configuración:
+```env
+DATABASE_URL=bolt://neo4j:test1234@fastapi-neo4j-db-service:7687
+SECRET_KEY=tu-clave-secreta-super-segura-aqui
+DEBUG=True
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+REFRESH_TOKEN_EXPIRE_DAYS=7
+```
+
+3. Inicia los servicios:
+```bash
+docker-compose up -d
+```
+
+El servicio estará disponible en `http://localhost:8000`
+
+### Opción 2: Instalación Local
+
+1. Instala las dependencias:
+```bash
+pip install -r requirements.txt
+```
+
+2. Configura Neo4j localmente o usa una instancia remota
+
+3. Configura las variables de entorno (crea un archivo `.env`)
+
+4. Ejecuta la aplicación:
+```bash
+uvicorn src.main:app --reload
+```
+
+## 📚 Documentación de la API
+
+Una vez que el servicio esté en ejecución, puedes acceder a la documentación interactiva:
+
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+
+## 🔌 Endpoints Disponibles
+
+### Autenticación (`/auth`)
+
+- `POST /auth/register` - Registro de nuevos usuarios
+- `POST /auth/login` - Inicio de sesión
+
+### Usuarios (`/users`)
+
+- `GET /users/` - Listar todos los usuarios
+
+## 🔐 Seguridad
+
+- Las contraseñas se encriptan usando **bcrypt**
+- Los tokens JWT se utilizan para autenticación stateless
+- Soporte para refresh tokens para mayor seguridad
+- Variables de entorno para configuración sensible
+- Validación de datos en todas las entradas
+
+## 🧪 Desarrollo
+
+### Estructura del Proyecto
+
+El proyecto sigue principios de arquitectura limpia:
+
+- **DTOs**: Definen la estructura de datos de entrada/salida
+- **Controllers**: Manejan las peticiones HTTP
+- **Services**: Contienen la lógica de negocio
+- **Models**: Definen los modelos de Neo4j con neomodel
+- **Routes**: Definen los endpoints de la API
+
+### Agregar Nuevas Funcionalidades
+
+1. Define los modelos en `src/models/`
+2. Crea los DTOs necesarios en `src/dtos/`
+3. Implementa la lógica de negocio en `src/services/`
+4. Crea los controladores en `src/controllers/`
+5. Define las rutas en `src/routes/`
+6. Registra las rutas en `src/main.py`
+
+## 🤝 Contribuir
+
+Este es un proyecto open source y las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📝 Licencia
+
+Este proyecto es open source y está disponible bajo la licencia MIT.
+
+## 🆘 Soporte
+
+Para reportar bugs o solicitar features, por favor abre un issue en el repositorio de GitHub.
+
+## 👨‍💻 Autor
+
+Desarrollado con ❤️ por la comunidad open source
+
+---
+
+**Nota**: Este microservicio está diseñado para ser parte de una arquitectura de microservicios más amplia. Asegúrate de configurar adecuadamente los servicios de red y seguridad en tu entorno de producción.
+
