@@ -5,6 +5,7 @@ import jwt
 from src.config.settings import settings
 from src.models.login_attempt_model import LoginAttempt
 from src.models.session_model import Session
+from datetime import datetime, timedelta
 
 
 class UserService:
@@ -24,10 +25,26 @@ class UserService:
         try:
             user = User.nodes.get(email=email)
             if bcrypt.checkpw(password.encode('utf8'), user.password.encode('utf8')):
-                encoded_jwt = jwt.encode({"sub": user.uid}, settings.secret_key, algorithm="HS256")
-                session = Session(token=encoded_jwt, created_at="now").save()
+                now = datetime.utcnow()
+                access_exp = now + timedelta(minutes=settings.access_token_expire_minutes)
+                refresh_exp = now + timedelta(days=settings.refresh_token_expire_days)
+
+                access_payload = {
+                    "sub": user.uid,
+                    "iat": int(now.timestamp()),
+                    "exp": int(access_exp.timestamp()),
+                }
+                refresh_payload = {
+                    "sub": user.uid,
+                    "iat": int(now.timestamp()),
+                    "exp": int(refresh_exp.timestamp()),
+                }
+
+                token = jwt.encode(access_payload, settings.secret_key, algorithm="HS256")
+                refresh_token = jwt.encode(refresh_payload, settings.secret_key, algorithm="HS256")
+                session = Session(token=token, created_at=now.isoformat()).save()
                 user.sessions.connect(session)
-                return encoded_jwt
+                return {"token": token, "refresh_token": refresh_token}
             return None
         except Exception:
             login_attempt = LoginAttempt(timestamp="now", ip_address=ip_address).save()
