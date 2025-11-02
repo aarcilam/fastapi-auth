@@ -21,9 +21,9 @@ class UserService:
     def get_users(self):
         return User.nodes.all()    
 
-    def login_user(self, email: str, password: str, ip_address: str):
+    def login_user(self, username: str, password: str, ip_address: str):
         try:
-            user = User.nodes.get(email=email)
+            user = User.nodes.get(username=username)
             if bcrypt.checkpw(password.encode('utf8'), user.password.encode('utf8')):
                 now = datetime.utcnow()
                 access_exp = now + timedelta(minutes=settings.access_token_expire_minutes)
@@ -50,7 +50,7 @@ class UserService:
             login_attempt = LoginAttempt(ip_address=ip_address).save()
             return None    
 
-    def create_user(self, name: str, email: str, password: str):
+    def create_user(self, name: str, username: str, phone: str | None, email: str, password: str):
         role = self.get_role(name="user")
         # Generating Salt
         salt = bcrypt.gensalt()
@@ -59,7 +59,7 @@ class UserService:
             password=password.encode('utf8'),
             salt=salt
         )
-        user = User(name=name, email=email, password=hash_password.decode('utf8')).save()
+        user = User(name=name, username=username, phone=phone, email=email, password=hash_password.decode('utf8')).save()
         user.roles.connect(role)
         
         return user

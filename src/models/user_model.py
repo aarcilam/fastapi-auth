@@ -3,6 +3,7 @@ from neomodel import StructuredNode, StringProperty, UniqueIdProperty, Relations
 class User(StructuredNode):
     uid = UniqueIdProperty()
     name = StringProperty(unique_index=True, required=True)
+    username = StringProperty(unique_index=True, required=True)
     email = StringProperty(unique_index=True, required=True)
     phone = StringProperty(unique_index=True, required=False)
     password = StringProperty(required=True)
