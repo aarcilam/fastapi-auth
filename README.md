@@ -142,11 +142,145 @@ Una vez que el servicio esté en ejecución, puedes acceder a la documentación 
 ### Autenticación (`/auth`)
 
 - `POST /auth/register` - Registro de nuevos usuarios
-- `POST /auth/login` - Inicio de sesión
+- `POST /auth/login` - Inicio de sesión (retorna Access Token y Refresh Token)
+- `POST /auth/refresh` - Renovación de Access Token usando Refresh Token
 
 ### Usuarios (`/users`)
 
 - `GET /users/` - Listar todos los usuarios
+
+## 🔄 Flujo de Autenticación con Tokens
+
+Este microservicio implementa un sistema de autenticación robusto basado en dos tipos de tokens con diferentes tiempos de expiración. Este enfoque proporciona seguridad mejorada y una mejor experiencia de usuario.
+
+### Flujo Completo
+
+#### 1. Inicio de Sesión (Login)
+
+Cuando un usuario realiza login exitoso, el servidor responde con **dos tokens**:
+
+- **Access Token**: Token de corta duración (por defecto: 15 minutos)
+- **Refresh Token**: Token de larga duración (por defecto: 7 días)
+
+```json
+{
+  "message": "Login successful",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+#### 2. Almacenamiento en el Cliente (Frontend)
+
+El cliente debe almacenar los tokens de la siguiente manera:
+
+- **Refresh Token**: Almacenado en una **cookie HttpOnly** (segura contra acceso desde JavaScript)
+  - Esto proporciona protección adicional contra ataques XSS
+  - El navegador enviará automáticamente la cookie en cada petición al servidor
+
+- **Access Token**: Almacenado en **localStorage** o **sessionStorage**
+  - Se utiliza para autenticar las peticiones a las APIs del backend
+  - Se envía en el header `Authorization: Bearer <access_token>`
+
+#### 3. Uso Normal de la Aplicación
+
+Durante el uso normal de la aplicación:
+
+- El cliente utiliza el **Access Token** para realizar todas las peticiones a las APIs protegidas
+- El token se incluye en el header de autorización: `Authorization: Bearer <access_token>`
+- Mientras el token no expire, el usuario puede acceder a los recursos protegidos
+
+#### 4. Renovación de Access Token
+
+Cuando el **Access Token** expira:
+
+1. El cliente detecta que el token ha expirado (generalmente mediante un error 401)
+2. El cliente realiza una petición al endpoint `/auth/refresh` del servidor de autenticación
+3. El **Refresh Token** se envía automáticamente en la cookie (HttpOnly)
+4. El servidor valida el Refresh Token:
+   - Verifica que el token sea válido y no haya expirado
+   - Verifica que esté asociado a una sesión activa del usuario
+5. Si es válido, el servidor retorna un **nuevo Access Token**
+6. El cliente actualiza el Access Token almacenado y continúa operando normalmente
+
+```http
+POST /auth/refresh
+Cookie: refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Response:
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+
+#### 5. Expiración del Refresh Token
+
+Cuando el **Refresh Token** también expira:
+
+- El servidor rechazará cualquier intento de renovación
+- El cliente debe detectar esta situación
+- El usuario será **deslogueado automáticamente** y redirigido a la página de login
+- El usuario deberá iniciar sesión nuevamente para obtener nuevos tokens
+
+### Ventajas de Este Flujo
+
+✅ **Seguridad mejorada**: Los tokens de acceso de corta duración limitan el tiempo de exposición en caso de robo  
+✅ **Experiencia de usuario fluida**: Renovación automática sin interrumpir la sesión del usuario  
+✅ **Protección contra XSS**: El Refresh Token en HttpOnly cookie no es accesible desde JavaScript  
+✅ **Control granular**: Puedes revocar sesiones específicas sin afectar otras sesiones del usuario  
+✅ **Trazabilidad**: Todas las sesiones y renovaciones se registran en Neo4j para auditoría  
+
+### Configuración de Tiempos de Expiración
+
+Los tiempos de expiración se configuran mediante variables de entorno:
+
+```env
+ACCESS_TOKEN_EXPIRE_MINUTES=15    # Tiempo de vida del Access Token (minutos)
+REFRESH_TOKEN_EXPIRE_DAYS=7       # Tiempo de vida del Refresh Token (días)
+```
+
+### Diagrama de Flujo
+
+```
+┌─────────┐          ┌──────────────┐          ┌─────────────┐
+│ Cliente │          │ Auth Server  │          │   API Backend│
+└────┬────┘          └──────┬───────┘          └──────┬───────┘
+     │                      │                          │
+     │  1. POST /auth/login │                          │
+     │─────────────────────>│                          │
+     │                      │                          │
+     │  Access + Refresh    │                          │
+     │<─────────────────────│                          │
+     │                      │                          │
+     │  2. Almacenar tokens │                          │
+     │  (localStorage +     │                          │
+     │   HttpOnly cookie)   │                          │
+     │                      │                          │
+     │  3. GET /api/resource│                          │
+     │  Header: Bearer token │                         │
+     │─────────────────────────────────────────────────>│
+     │                      │                          │
+     │                      │       4. Validar token   │
+     │                      │<─────────────────────────│
+     │                      │                          │
+     │                      │    5. Response 200 OK   │
+     │                      │─────────────────────────>│
+     │  6. Response data    │                          │
+     │<─────────────────────────────────────────────────│
+     │                      │                          │
+     │  7. Token expirado   │                          │
+     │  (401 Unauthorized)  │                          │
+     │<─────────────────────────────────────────────────│
+     │                      │                          │
+     │  8. POST /auth/refresh                          │
+     │  Cookie: refresh_token                          │
+     │─────────────────────>│                          │
+     │                      │                          │
+     │  9. Nuevo Access Token                          │
+     │<─────────────────────│                          │
+     │                      │                          │
+```
 
 ## 🔐 Seguridad
 
@@ -155,6 +289,8 @@ Una vez que el servicio esté en ejecución, puedes acceder a la documentación 
 - Soporte para refresh tokens para mayor seguridad
 - Variables de entorno para configuración sensible
 - Validación de datos en todas las entradas
+- **Refresh Tokens en HttpOnly cookies**: Protección adicional contra XSS
+- **Tokens de acceso de corta duración**: Minimiza el riesgo de exposición
 
 ## 🧪 Desarrollo
 
