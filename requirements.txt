@@ -6,3 +6,4 @@ neomodel
 pydantic_settings
 bcrypt
 pyjwt
+pytest
