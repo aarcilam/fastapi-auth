@@ -1,3 +1,5 @@
+from src.models.role_model import Role
+
 class RoleService:
     def get_role_or_create(self, name: str):
         try:
