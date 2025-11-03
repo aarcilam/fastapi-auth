@@ -50,8 +50,8 @@ class UserService:
             login_attempt = LoginAttempt(ip_address=ip_address).save()
             return None    
 
-    def create_user(self, name: str, username: str, phone: str | None, email: str, password: str):
-        role = self.get_role(name="user")
+    def create_user(self, name: str, username: str, phone: str | None, email: str, password: str, role: str | None = "user"):
+        role = self.get_role(name=role)
         # Generating Salt
         salt = bcrypt.gensalt()
         # Hashing Password

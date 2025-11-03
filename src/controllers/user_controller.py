@@ -2,12 +2,9 @@ from src.services.user_service import UserService
 
 class UserController:
     
-    def create_user(self, name: str, username: str, phone: str | None, email: str, password: str):
+    def create_user(self, name: str, username: str, phone: str | None, email: str, password: str, role: str | None = "user"):
         user_service = UserService()
-        user = user_service.create_user(name, username, phone, email, password)
-        # Return a JSON-serializable representation instead of the
-        # neomodel StructuredNode instance to avoid recursion during
-        # FastAPI encoding.
+        user = user_service.create_user(name, username, phone, email, password, role)
         if not user:
             return None
         try:

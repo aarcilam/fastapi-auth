@@ -5,4 +5,5 @@ class create_user_dto(BaseModel):
     username: str 
     phone: str | None = None
     email: str
-    password: str   
+    password: str  
+    role: str | None = "user" 

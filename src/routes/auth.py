@@ -29,7 +29,7 @@ async def login(dto: login_dto):
 
 @auth_router.post("/register")
 async def register(dto: create_user_dto):
-    user = UserController().create_user(name=dto.name, username=dto.username, phone=dto.phone, email=dto.email, password=dto.password)
+    user = UserController().create_user(name=dto.name, username=dto.username, phone=dto.phone, email=dto.email, password=dto.password, role=dto.role)
     return {"message": "User registered successfully", "user": user}
 
 @auth_router.get("/refresh-token")
