@@ -6,6 +6,7 @@ from src.config.settings import settings
 from src.models.login_attempt_model import LoginAttempt
 from src.models.session_model import Session
 from datetime import datetime, timedelta
+from src.services.role_service import RoleService
 
 
 class UserService:
@@ -51,7 +52,8 @@ class UserService:
             return None    
 
     def create_user(self, name: str, username: str, phone: str | None, email: str, password: str, role: str | None = "user"):
-        role = self.get_role(name=role)
+        roleService = RoleService()
+        role = roleService.get_role_or_create(name=role)
         # Generating Salt
         salt = bcrypt.gensalt()
         # Hashing Password
