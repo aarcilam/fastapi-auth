@@ -1,4 +1,5 @@
 from pydantic import BaseModel;
+from typing import Literal
 
 class create_user_dto(BaseModel):
     name: str
@@ -6,4 +7,4 @@ class create_user_dto(BaseModel):
     phone: str | None = None
     email: str
     password: str  
-    role: str | None = "user" 
+    role: Literal["user", "admin"] | None = "user" 
