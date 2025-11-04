@@ -1,5 +1,6 @@
 from src.models.capacity_model import Capacity
 from src.models.user_model import User
+from typing import List
 
 class CapacityService:
     def create_capacity(self, name: str, description: str):
