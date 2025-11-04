@@ -1,5 +1,5 @@
 from src.models.capacity_model import Capacity
-from src.models.user_model import User
+from src.models.role_model import Role
 from typing import List
 
 class CapacityService:
@@ -15,8 +15,8 @@ class CapacityService:
         capacities = Capacity.nodes.filter(uid__in=uids)
         return capacities
 
-    def assing_capacity_to_user(self, user: User, capacity: Capacity):
-        user.capacity.connect(capacity)
+    def assing_capacity_to_user(self, role: Role, capacity: Capacity):
+        role.capacities.connect(capacity)
         return True
     
     def get_capacity_by_name(self, name: str):
