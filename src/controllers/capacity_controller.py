@@ -1,5 +1,7 @@
+from src.services.capacity_service import CapacityService
+
 class CapacityController:
-    def get_capacity(self):
+    def get_capacities(self):
         capacity_service = CapacityService()
         capacities = capacity_service.get_capacities()
         return capacities

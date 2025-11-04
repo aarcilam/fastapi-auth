@@ -5,4 +5,4 @@ class Capacity(StructuredNode):
     name = StringProperty(required=True)
     description = StringProperty(required=False)
 
-    user = RelationshipFrom('src.models.user_model.User', 'HAS_CAPACITY')
+    role = RelationshipFrom('src.models.role_model.Role', 'HAS_CAPACITY')

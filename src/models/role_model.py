@@ -1,9 +1,8 @@
-from neomodel import StructuredNode, StringProperty, UniqueIdProperty, RelationshipFrom
+from neomodel import StructuredNode, StringProperty, UniqueIdProperty, RelationshipFrom, RelationshipTo
 
 class Role(StructuredNode):
     uid = UniqueIdProperty()
     name = StringProperty(unique_index=True, required=True)
 
-    # Use fully-qualified path for User so neomodel resolves the reference
-    # across modules rather than looking for User inside this module.
+    capacities = RelationshipTo('src.models.capacity_model.Capacity', 'HAS_CAPACITY')
     users = RelationshipFrom('src.models.user_model.User', 'HAS_ROLE')

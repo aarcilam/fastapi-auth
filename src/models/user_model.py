@@ -14,6 +14,5 @@ class User(StructuredNode):
 
     created_by = RelationshipTo('src.models.user_model.User', 'CREATED_BY')
     roles = RelationshipTo('src.models.role_model.Role', 'HAS_ROLE')
-    capacities = RelationshipTo('src.models.capacity_model.Capacity', 'HAS_CAPACITY')
     sessions = RelationshipTo('src.models.session_model.Session', 'HAS_SESSION')
     notifications = RelationshipFrom('src.models.notification_model.Notification', 'RECEIVES_NOTIFICATION')
