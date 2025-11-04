@@ -14,11 +14,12 @@ El sistema ofrece capacidades avanzadas de autenticación con soporte para sesio
 ## ✨ Funcionalidades
 
 ### 🔐 Autenticación
-- **Registro de usuarios**: Creación de nuevas cuentas con validación de datos
-- **Login seguro**: Autenticación mediante email y contraseña con encriptación bcrypt
+- **Registro de usuarios**: Creación de nuevas cuentas con validación de datos y asignación de roles (user/admin)
+- **Login seguro**: Autenticación mediante username y contraseña con encriptación bcrypt
+- **Login OAuth2**: Endpoint compatible con el estándar OAuth2 Password Grant para integración con herramientas y librerías OAuth2
 - **Gestión de sesiones**: Control y seguimiento de sesiones activas de usuarios
 - **Tokens JWT**: Generación de tokens de acceso y refresh tokens
-- **Refresh tokens**: Renovación de tokens de acceso expirados
+- **Refresh tokens**: Renovación de tokens de acceso expirados mediante cookies HttpOnly
 - **Intentos de login**: Seguimiento de intentos de autenticación fallidos
 
 ### 👥 Gestión de Usuarios
@@ -142,8 +143,40 @@ Una vez que el servicio esté en ejecución, puedes acceder a la documentación 
 ### Autenticación (`/auth`)
 
 - `POST /auth/register` - Registro de nuevos usuarios
+  - **Parámetros**: `name`, `username`, `email`, `password`, `phone` (opcional), `role` (opcional, valores: "user" o "admin", por defecto: "user")
 - `POST /auth/login` - Inicio de sesión (retorna Access Token y Refresh Token)
-- `POST /auth/refresh` - Renovación de Access Token usando Refresh Token
+  - **Parámetros**: `username`, `password`, `ip_address`
+  - **Respuesta**: 
+    ```json
+    {
+      "message": "Login successful",
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "token_type": "bearer",
+      "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+    ```
+- `POST /auth/token` - Inicio de sesión compatible con OAuth2 (form-data)
+  - **Compatibilidad**: Endpoint estándar OAuth2 para integración con herramientas y librerías que soportan el flujo OAuth2
+  - **Formato**: `application/x-www-form-urlencoded`
+  - **Parámetros**: `username`, `password` (enviados como form-data)
+  - **Respuesta**:
+    ```json
+    {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "token_type": "bearer"
+    }
+    ```
+- `GET /auth/refresh-token` - Renovación de Access Token usando Refresh Token
+  - **Método**: Cookie-based (Refresh Token debe enviarse en cookie `refresh_token`)
+  - **Respuesta**:
+    ```json
+    {
+      "message": "Token refreshed successfully",
+      "token": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      }
+    }
+    ```
 
 ### Usuarios (`/users`)
 
@@ -157,16 +190,38 @@ Este microservicio implementa un sistema de autenticación robusto basado en dos
 
 #### 1. Inicio de Sesión (Login)
 
-Cuando un usuario realiza login exitoso, el servidor responde con **dos tokens**:
+El sistema ofrece **dos endpoints** para autenticación:
+
+**Opción A: `POST /auth/login`** (Recomendado para aplicaciones web)
+- Retorna Access Token, Refresh Token y metadata adicional
+- Formato JSON estándar
+- Permite especificar `ip_address` para seguimiento
+
+**Opción B: `POST /auth/token`** (Compatibilidad OAuth2)
+- Compatible con el estándar OAuth2 Password Grant
+- Formato form-data (`application/x-www-form-urlencoded`)
+- Ideal para integración con librerías OAuth2 y herramientas de testing
+
+Cuando un usuario realiza login exitoso (usando cualquiera de los dos endpoints), el servidor responde con **dos tokens**:
 
 - **Access Token**: Token de corta duración (por defecto: 15 minutos)
 - **Refresh Token**: Token de larga duración (por defecto: 7 días)
 
+**Respuesta de `/auth/login`:**
 ```json
 {
   "message": "Login successful",
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
   "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Respuesta de `/auth/token`:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
 }
 ```
 
@@ -195,7 +250,7 @@ Durante el uso normal de la aplicación:
 Cuando el **Access Token** expira:
 
 1. El cliente detecta que el token ha expirado (generalmente mediante un error 401)
-2. El cliente realiza una petición al endpoint `/auth/refresh` del servidor de autenticación
+2. El cliente realiza una petición al endpoint `GET /auth/refresh-token` del servidor de autenticación
 3. El **Refresh Token** se envía automáticamente en la cookie (HttpOnly)
 4. El servidor valida el Refresh Token:
    - Verifica que el token sea válido y no haya expirado
@@ -204,13 +259,15 @@ Cuando el **Access Token** expira:
 6. El cliente actualiza el Access Token almacenado y continúa operando normalmente
 
 ```http
-POST /auth/refresh
+GET /auth/refresh-token
 Cookie: refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 Response:
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
+  "message": "Token refreshed successfully",
+  "token": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
 }
 ```
 
@@ -273,7 +330,7 @@ REFRESH_TOKEN_EXPIRE_DAYS=7       # Tiempo de vida del Refresh Token (días)
      │  (401 Unauthorized)  │                          │
      │<─────────────────────────────────────────────────│
      │                      │                          │
-     │  8. POST /auth/refresh                          │
+     │  8. GET /auth/refresh-token                     │
      │  Cookie: refresh_token                          │
      │─────────────────────>│                          │
      │                      │                          │
